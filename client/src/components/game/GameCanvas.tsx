@@ -14,9 +14,9 @@ const GameCanvas = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size to half width
+    // Set canvas size to full width
     const resizeCanvas = () => {
-      canvas.width = window.innerWidth * 0.5;
+      canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     };
 

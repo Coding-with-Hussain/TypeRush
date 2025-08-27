@@ -170,7 +170,7 @@ export class GameEngine {
     if (now - this.lastEnemySpawn > spawnInterval) {
       const enemy: Enemy = {
         id: Math.random().toString(36),
-        x: Math.random() * (this.ctx.canvas.width - 120) + 60,
+        x: Math.random() * (this.ctx.canvas.width - 100) + 50,
         y: -50,
         word: getRandomWord(this.difficulty),
         typedLength: 0,
@@ -377,12 +377,7 @@ export class GameEngine {
           this.destroyEnemy(this.currentTarget);
         }
       } else {
-        // Wrong key - reset target and play error feedback
-        this.currentTarget.typedLength = 0;
-        this.currentTarget = null;
-        this.callbacks.setCurrentWord('');
-        
-        // Provide visual feedback for wrong key
+        // Wrong key - just provide visual feedback, don't reset progress
         this.createErrorEffect(this.player.x + this.player.width / 2, this.player.y);
       }
     }
