@@ -6,6 +6,7 @@ interface GameCallbacks {
   onWPMUpdate: (wpm: number) => void;
   onAccuracyUpdate: (accuracy: number) => void;
   onGameOver: () => void;
+  setCurrentWord: (word: string) => void;
 }
 
 interface Enemy {
@@ -72,9 +73,10 @@ export class GameEngine {
   // Current typing target
   private currentTarget: Enemy | null = null;
   
-  constructor(ctx: CanvasRenderingContext2D, callbacks: GameCallbacks) {
+  constructor(ctx: CanvasRenderingContext2D, callbacks: GameCallbacks, difficulty: 'easy' | 'medium' | 'hard' = 'easy') {
     this.ctx = ctx;
     this.callbacks = callbacks;
+    this.difficulty = difficulty;
     this.initializeStars();
   }
 

@@ -5,7 +5,7 @@ import { GameEngine } from '../../lib/gameEngine';
 const GameCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameEngineRef = useRef<GameEngine | null>(null);
-  const { updateScore, updateWPM, updateAccuracy, endGame } = useTypingGame();
+  const { updateScore, updateWPM, updateAccuracy, endGame, setCurrentWord, difficulty } = useTypingGame();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -28,8 +28,9 @@ const GameCanvas = () => {
       onScoreUpdate: updateScore,
       onWPMUpdate: updateWPM,
       onAccuracyUpdate: updateAccuracy,
-      onGameOver: endGame
-    });
+      onGameOver: endGame,
+      setCurrentWord: setCurrentWord
+    }, difficulty);
 
     gameEngineRef.current.start();
 
@@ -46,7 +47,7 @@ const GameCanvas = () => {
       window.removeEventListener('keydown', handleKeyDown);
       gameEngineRef.current?.stop();
     };
-  }, [updateScore, updateWPM, updateAccuracy, endGame]);
+  }, [updateScore, updateWPM, updateAccuracy, endGame, setCurrentWord, difficulty]);
 
   return (
     <canvas
