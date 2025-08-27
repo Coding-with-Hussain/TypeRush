@@ -170,7 +170,7 @@ export class GameEngine {
     if (now - this.lastEnemySpawn > spawnInterval) {
       const enemy: Enemy = {
         id: Math.random().toString(36),
-        x: Math.random() * (this.ctx.canvas.width - 100) + 50,
+        x: Math.random() * (this.ctx.canvas.width - 120) + 60,
         y: -50,
         word: getRandomWord(this.difficulty),
         typedLength: 0,
@@ -475,16 +475,25 @@ export class GameEngine {
         ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
       }
       
-      // Draw word with better visibility
-      ctx.font = 'bold 18px monospace';
+      // Draw word with better visibility and bounds checking
+      ctx.font = 'bold 16px monospace';
       ctx.textAlign = 'center';
       
       const wordY = enemy.y + enemy.height + 30;
-      const centerX = enemy.x + enemy.width / 2;
+      let centerX = enemy.x + enemy.width / 2;
+      
+      // Ensure word stays within canvas bounds
+      const textWidth = ctx.measureText(enemy.word).width;
+      const padding = 10;
+      
+      if (centerX - textWidth/2 < padding) {
+        centerX = textWidth/2 + padding;
+      } else if (centerX + textWidth/2 > ctx.canvas.width - padding) {
+        centerX = ctx.canvas.width - textWidth/2 - padding;
+      }
       
       // Draw background for better readability
-      const textWidth = ctx.measureText(enemy.word).width;
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
       ctx.fillRect(centerX - textWidth/2 - 5, wordY - 20, textWidth + 10, 25);
       
       // Draw typed portion in bright green with glow

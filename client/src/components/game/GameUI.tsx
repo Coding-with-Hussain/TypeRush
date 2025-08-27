@@ -50,11 +50,11 @@ const GameUI = () => {
 
       {/* Current word display */}
       {currentWord && (
-        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
-          <Card className="bg-black/90 border-gray-600 p-4">
+        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-10">
+          <Card className="bg-black/95 border-purple-500/50 p-4 shadow-lg shadow-purple-500/20">
             <div className="text-center">
-              <div className="text-sm text-gray-300 mb-2">Type this word:</div>
-              <div className="text-2xl font-mono text-white tracking-wider">
+              <div className="text-sm text-purple-300 mb-2">🎯 Target Word:</div>
+              <div className="text-2xl font-mono text-white tracking-wider bg-purple-900/30 px-4 py-2 rounded border border-purple-500/30">
                 {currentWord}
               </div>
             </div>
