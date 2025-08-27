@@ -24,8 +24,12 @@ interface Bullet {
   id: string;
   x: number;
   y: number;
+  vx: number;
+  vy: number;
   speed: number;
   targetId: string;
+  targetX: number;
+  targetY: number;
 }
 
 interface Particle {
@@ -201,11 +205,15 @@ export class GameEngine {
 
   private updateBullets() {
     this.bullets.forEach(bullet => {
-      bullet.y -= bullet.speed;
+      bullet.x += bullet.vx;
+      bullet.y += bullet.vy;
     });
     
     // Remove bullets that are off screen
-    this.bullets = this.bullets.filter(bullet => bullet.y > -10);
+    this.bullets = this.bullets.filter(bullet => 
+      bullet.x > -10 && bullet.x < this.ctx.canvas.width + 10 &&
+      bullet.y > -10 && bullet.y < this.ctx.canvas.height + 10
+    );
   }
 
   private updateParticles() {
@@ -379,12 +387,31 @@ export class GameEngine {
   }
 
   private fireBullet(target: Enemy) {
+    const startX = this.player.x + this.player.width / 2;
+    const startY = this.player.y;
+    const targetX = target.x + target.width / 2;
+    const targetY = target.y + target.height / 2;
+    
+    // Calculate direction vector
+    const dx = targetX - startX;
+    const dy = targetY - startY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    // Normalize and apply speed
+    const speed = 12;
+    const vx = (dx / distance) * speed;
+    const vy = (dy / distance) * speed;
+    
     const bullet: Bullet = {
       id: Math.random().toString(36),
-      x: this.player.x + this.player.width / 2,
-      y: this.player.y,
-      speed: 8,
-      targetId: target.id
+      x: startX,
+      y: startY,
+      vx: vx,
+      vy: vy,
+      speed: speed,
+      targetId: target.id,
+      targetX: targetX,
+      targetY: targetY
     };
     
     this.bullets.push(bullet);
@@ -509,28 +536,45 @@ export class GameEngine {
     const { ctx } = this;
     
     this.bullets.forEach(bullet => {
+      // Calculate rotation angle based on velocity
+      const angle = Math.atan2(bullet.vy, bullet.vx);
+      
+      ctx.save();
+      ctx.translate(bullet.x, bullet.y);
+      ctx.rotate(angle + Math.PI / 2); // Add 90 degrees since sprite points up
+      
       if (this.bulletSprite.complete) {
         // Draw bullet sprite with glow
         ctx.shadowColor = '#44ff44';
         ctx.shadowBlur = 8;
-        ctx.drawImage(this.bulletSprite, bullet.x - 2, bullet.y, 4, 8);
+        ctx.drawImage(this.bulletSprite, -2, -4, 4, 8);
         ctx.shadowBlur = 0;
-        
-        // Add energy trail
-        ctx.fillStyle = 'rgba(68, 255, 68, 0.3)';
-        ctx.fillRect(bullet.x - 1, bullet.y + 8, 2, 12);
       } else {
         // Fallback with enhanced effects
         ctx.fillStyle = '#44ff44';
         ctx.shadowColor = '#44ff44';
         ctx.shadowBlur = 8;
-        ctx.fillRect(bullet.x - 2, bullet.y, 4, 8);
+        ctx.fillRect(-2, -4, 4, 8);
         ctx.shadowBlur = 0;
-        
-        // Add energy trail
-        ctx.fillStyle = 'rgba(68, 255, 68, 0.3)';
-        ctx.fillRect(bullet.x - 1, bullet.y + 8, 2, 12);
       }
+      
+      ctx.restore();
+      
+      // Add energy trail behind bullet
+      const trailLength = 15;
+      const trailX = bullet.x - (bullet.vx / bullet.speed) * trailLength;
+      const trailY = bullet.y - (bullet.vy / bullet.speed) * trailLength;
+      
+      ctx.strokeStyle = 'rgba(68, 255, 68, 0.6)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(trailX, trailY);
+      ctx.lineTo(bullet.x, bullet.y);
+      ctx.stroke();
+      
+      // Add small glow particles along trail
+      ctx.fillStyle = 'rgba(68, 255, 68, 0.3)';
+      ctx.fillRect(trailX - 1, trailY - 1, 2, 2);
     });
   }
 
