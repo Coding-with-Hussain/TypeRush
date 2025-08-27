@@ -5,6 +5,7 @@ interface AudioState {
   hitSound: HTMLAudioElement | null;
   successSound: HTMLAudioElement | null;
   isMuted: boolean;
+  isBackgroundPlaying: boolean;
   
   // Setter functions
   setBackgroundMusic: (music: HTMLAudioElement) => void;
@@ -15,26 +16,39 @@ interface AudioState {
   toggleMute: () => void;
   playHit: () => void;
   playSuccess: () => void;
+  startBackgroundMusic: () => void;
+  stopBackgroundMusic: () => void;
 }
 
 export const useAudio = create<AudioState>((set, get) => ({
   backgroundMusic: null,
   hitSound: null,
   successSound: null,
-  isMuted: true, // Start muted by default
+  isMuted: false, // Start unmuted by default
+  isBackgroundPlaying: false,
   
   setBackgroundMusic: (music) => set({ backgroundMusic: music }),
   setHitSound: (sound) => set({ hitSound: sound }),
   setSuccessSound: (sound) => set({ successSound: sound }),
   
   toggleMute: () => {
-    const { isMuted } = get();
+    const { isMuted, backgroundMusic } = get();
     const newMutedState = !isMuted;
     
-    // Just update the muted state
+    // Update the muted state
     set({ isMuted: newMutedState });
     
-    // Log the change
+    // Control background music based on mute state
+    if (backgroundMusic) {
+      if (newMutedState) {
+        backgroundMusic.pause();
+        set({ isBackgroundPlaying: false });
+      } else {
+        backgroundMusic.play().catch(e => console.log('Background music play error:', e));
+        set({ isBackgroundPlaying: true });
+      }
+    }
+    
     console.log(`Sound ${newMutedState ? 'muted' : 'unmuted'}`);
   },
   
@@ -58,17 +72,30 @@ export const useAudio = create<AudioState>((set, get) => ({
   
   playSuccess: () => {
     const { successSound, isMuted } = get();
-    if (successSound) {
-      // If sound is muted, don't play anything
-      if (isMuted) {
-        console.log("Success sound skipped (muted)");
-        return;
-      }
-      
-      successSound.currentTime = 0;
-      successSound.play().catch(error => {
+    if (successSound && !isMuted) {
+      const soundClone = successSound.cloneNode() as HTMLAudioElement;
+      soundClone.volume = 0.4;
+      soundClone.play().catch(error => {
         console.log("Success sound play prevented:", error);
       });
+    }
+  },
+  
+  startBackgroundMusic: () => {
+    const { backgroundMusic, isMuted } = get();
+    if (backgroundMusic && !isMuted) {
+      backgroundMusic.play().catch(e => {
+        console.log('Background music play error:', e);
+      });
+      set({ isBackgroundPlaying: true });
+    }
+  },
+  
+  stopBackgroundMusic: () => {
+    const { backgroundMusic } = get();
+    if (backgroundMusic) {
+      backgroundMusic.pause();
+      set({ isBackgroundPlaying: false });
     }
   }
 }));

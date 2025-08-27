@@ -9,7 +9,7 @@ import "@fontsource/inter";
 
 function App() {
   const { gameState } = useTypingGame();
-  const { setBackgroundMusic, setHitSound, setSuccessSound } = useAudio();
+  const { setBackgroundMusic, setHitSound, setSuccessSound, startBackgroundMusic } = useAudio();
 
   // Initialize audio on component mount
   useEffect(() => {
@@ -18,12 +18,21 @@ function App() {
     const successAudio = new Audio("/sounds/success.mp3");
 
     bgMusic.loop = true;
-    bgMusic.volume = 0.3;
+    bgMusic.volume = 0.2;
+    hitAudio.volume = 0.5;
+    successAudio.volume = 0.6;
 
     setBackgroundMusic(bgMusic);
     setHitSound(hitAudio);
     setSuccessSound(successAudio);
   }, [setBackgroundMusic, setHitSound, setSuccessSound]);
+
+  // Start background music when game starts
+  useEffect(() => {
+    if (gameState === 'playing') {
+      startBackgroundMusic();
+    }
+  }, [gameState, startBackgroundMusic]);
 
   return (
     <div 

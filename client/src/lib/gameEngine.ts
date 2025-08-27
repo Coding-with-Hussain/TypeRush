@@ -58,6 +58,11 @@ export class GameEngine {
   private particles: Particle[] = [];
   private stars: Star[] = [];
   
+  // Sprites
+  private playerSprite: HTMLImageElement;
+  private enemySprite: HTMLImageElement;
+  private bulletSprite: HTMLImageElement;
+  
   // Player
   private player = { x: 0, y: 0, width: 60, height: 40 };
   
@@ -77,17 +82,28 @@ export class GameEngine {
     this.ctx = ctx;
     this.callbacks = callbacks;
     this.difficulty = difficulty;
+    
+    // Load sprites
+    this.playerSprite = new Image();
+    this.playerSprite.src = '/sprites/player-ship.svg';
+    
+    this.enemySprite = new Image();
+    this.enemySprite.src = '/sprites/enemy-ship.svg';
+    
+    this.bulletSprite = new Image();
+    this.bulletSprite.src = '/sprites/bullet.svg';
+    
     this.initializeStars();
   }
 
   private initializeStars() {
     this.stars = [];
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 150; i++) {
       this.stars.push({
         x: Math.random() * this.ctx.canvas.width,
         y: Math.random() * this.ctx.canvas.height,
-        speed: Math.random() * 2 + 0.5,
-        brightness: Math.random() * 0.8 + 0.2
+        speed: Math.random() * 3 + 0.5,
+        brightness: Math.random() * 0.9 + 0.1
       });
     }
   }
@@ -253,17 +269,48 @@ export class GameEngine {
     audio.playSuccess();
   }
 
-  private createExplosion(x: number, y: number) {
-    for (let i = 0; i < 15; i++) {
+  private createErrorEffect(x: number, y: number) {
+    // Create red particles for error feedback
+    for (let i = 0; i < 8; i++) {
       this.particles.push({
         id: Math.random().toString(36),
         x,
         y,
-        vx: (Math.random() - 0.5) * 8,
-        vy: (Math.random() - 0.5) * 8,
-        life: 30,
-        maxLife: 30,
-        color: `hsl(${Math.random() * 60 + 15}, 100%, 50%)`
+        vx: (Math.random() - 0.5) * 6,
+        vy: (Math.random() - 0.5) * 6 - 2,
+        life: 20,
+        maxLife: 20,
+        color: '#ff4444'
+      });
+    }
+  }
+
+  private createExplosion(x: number, y: number) {
+    // Create more particles for better explosion effect
+    for (let i = 0; i < 25; i++) {
+      this.particles.push({
+        id: Math.random().toString(36),
+        x,
+        y,
+        vx: (Math.random() - 0.5) * 12,
+        vy: (Math.random() - 0.5) * 12,
+        life: 40 + Math.random() * 20,
+        maxLife: 40 + Math.random() * 20,
+        color: `hsl(${Math.random() * 80 + 10}, 100%, ${50 + Math.random() * 30}%)`
+      });
+    }
+    
+    // Add some sparks
+    for (let i = 0; i < 10; i++) {
+      this.particles.push({
+        id: Math.random().toString(36),
+        x: x + (Math.random() - 0.5) * 20,
+        y: y + (Math.random() - 0.5) * 20,
+        vx: (Math.random() - 0.5) * 6,
+        vy: (Math.random() - 0.5) * 6,
+        life: 60,
+        maxLife: 60,
+        color: '#ffffff'
       });
     }
   }
@@ -320,10 +367,13 @@ export class GameEngine {
           this.destroyEnemy(this.currentTarget);
         }
       } else {
-        // Wrong key - reset target
+        // Wrong key - reset target and play error feedback
         this.currentTarget.typedLength = 0;
         this.currentTarget = null;
         this.callbacks.setCurrentWord('');
+        
+        // Provide visual feedback for wrong key
+        this.createErrorEffect(this.player.x + this.player.width / 2, this.player.y);
       }
     }
   }
@@ -343,8 +393,12 @@ export class GameEngine {
   private render() {
     const { ctx } = this;
     
-    // Clear canvas
-    ctx.fillStyle = 'rgba(10, 10, 35, 1)';
+    // Clear canvas with gradient background
+    const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+    gradient.addColorStop(0, 'rgba(10, 10, 35, 1)');
+    gradient.addColorStop(0.5, 'rgba(15, 15, 50, 1)');
+    gradient.addColorStop(1, 'rgba(20, 20, 60, 1)');
+    ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     
     // Draw stars
@@ -367,8 +421,17 @@ export class GameEngine {
     const { ctx } = this;
     
     this.stars.forEach(star => {
+      const size = star.brightness > 0.7 ? 2 : 1;
       ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`;
-      ctx.fillRect(star.x, star.y, 1, 1);
+      
+      // Add glow effect for brighter stars
+      if (star.brightness > 0.6) {
+        ctx.shadowColor = 'white';
+        ctx.shadowBlur = 3;
+      }
+      
+      ctx.fillRect(star.x, star.y, size, size);
+      ctx.shadowBlur = 0;
     });
   }
 
@@ -376,39 +439,68 @@ export class GameEngine {
     const { ctx } = this;
     
     this.enemies.forEach(enemy => {
-      // Draw enemy ship
-      ctx.fillStyle = '#ff4444';
-      ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-      
-      // Draw enemy ship details
-      ctx.fillStyle = '#cc2222';
-      ctx.fillRect(enemy.x + 10, enemy.y + 10, enemy.width - 20, enemy.height - 20);
-      
-      // Draw word
-      ctx.fillStyle = 'white';
-      ctx.font = 'bold 16px monospace';
-      ctx.textAlign = 'center';
-      
-      const wordY = enemy.y + enemy.height + 25;
-      
-      // Draw typed portion in green
-      if (enemy.typedLength > 0) {
-        const typedPortion = enemy.word.substring(0, enemy.typedLength);
-        ctx.fillStyle = '#44ff44';
-        ctx.fillText(typedPortion, enemy.x + enemy.width / 2, wordY);
+      // Draw enemy ship using sprite
+      if (this.enemySprite.complete) {
+        ctx.drawImage(this.enemySprite, enemy.x, enemy.y, enemy.width, enemy.height);
+      } else {
+        // Fallback rectangle
+        ctx.fillStyle = '#ff4444';
+        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
       }
       
-      // Draw remaining portion in white
-      const remainingPortion = enemy.word.substring(enemy.typedLength);
-      ctx.fillStyle = 'white';
-      const typedWidth = ctx.measureText(enemy.word.substring(0, enemy.typedLength)).width;
-      ctx.fillText(remainingPortion, enemy.x + enemy.width / 2 + typedWidth / 2, wordY);
+      // Draw word with better visibility
+      ctx.font = 'bold 18px monospace';
+      ctx.textAlign = 'center';
       
-      // Highlight current target
+      const wordY = enemy.y + enemy.height + 30;
+      const centerX = enemy.x + enemy.width / 2;
+      
+      // Draw background for better readability
+      const textWidth = ctx.measureText(enemy.word).width;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+      ctx.fillRect(centerX - textWidth/2 - 5, wordY - 20, textWidth + 10, 25);
+      
+      // Draw typed portion in bright green with glow
+      if (enemy.typedLength > 0) {
+        const typedPortion = enemy.word.substring(0, enemy.typedLength);
+        ctx.fillStyle = '#00ff00';
+        ctx.shadowColor = '#00ff00';
+        ctx.shadowBlur = 5;
+        
+        // Calculate position for typed text
+        const fullTextMetrics = ctx.measureText(enemy.word);
+        const typedMetrics = ctx.measureText(typedPortion);
+        const startX = centerX - fullTextMetrics.width / 2;
+        
+        ctx.fillText(typedPortion, startX + typedMetrics.width / 2, wordY);
+        ctx.shadowBlur = 0;
+      }
+      
+      // Draw remaining portion in bright white
+      const remainingPortion = enemy.word.substring(enemy.typedLength);
+      if (remainingPortion.length > 0) {
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#ffffff';
+        ctx.shadowBlur = 2;
+        
+        const fullTextMetrics = ctx.measureText(enemy.word);
+        const typedMetrics = ctx.measureText(enemy.word.substring(0, enemy.typedLength));
+        const remainingMetrics = ctx.measureText(remainingPortion);
+        const startX = centerX - fullTextMetrics.width / 2;
+        
+        ctx.fillText(remainingPortion, startX + typedMetrics.width + remainingMetrics.width / 2, wordY);
+        ctx.shadowBlur = 0;
+      }
+      
+      // Highlight current target with pulsing effect
       if (this.currentTarget?.id === enemy.id) {
-        ctx.strokeStyle = '#ffff44';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(enemy.x - 5, enemy.y - 5, enemy.width + 10, enemy.height + 10);
+        const pulseIntensity = Math.sin(Date.now() * 0.01) * 0.5 + 0.5;
+        ctx.strokeStyle = `rgba(255, 255, 68, ${0.5 + pulseIntensity * 0.5})`;
+        ctx.lineWidth = 3;
+        ctx.shadowColor = '#ffff44';
+        ctx.shadowBlur = 10;
+        ctx.strokeRect(enemy.x - 8, enemy.y - 8, enemy.width + 16, enemy.height + 16);
+        ctx.shadowBlur = 0;
       }
     });
   }
@@ -417,32 +509,63 @@ export class GameEngine {
     const { ctx } = this;
     
     this.bullets.forEach(bullet => {
-      ctx.fillStyle = '#44ff44';
-      ctx.fillRect(bullet.x - 2, bullet.y, 4, 8);
-      
-      // Add bullet glow effect
-      ctx.shadowColor = '#44ff44';
-      ctx.shadowBlur = 5;
-      ctx.fillRect(bullet.x - 1, bullet.y, 2, 8);
-      ctx.shadowBlur = 0;
+      if (this.bulletSprite.complete) {
+        // Draw bullet sprite with glow
+        ctx.shadowColor = '#44ff44';
+        ctx.shadowBlur = 8;
+        ctx.drawImage(this.bulletSprite, bullet.x - 2, bullet.y, 4, 8);
+        ctx.shadowBlur = 0;
+        
+        // Add energy trail
+        ctx.fillStyle = 'rgba(68, 255, 68, 0.3)';
+        ctx.fillRect(bullet.x - 1, bullet.y + 8, 2, 12);
+      } else {
+        // Fallback with enhanced effects
+        ctx.fillStyle = '#44ff44';
+        ctx.shadowColor = '#44ff44';
+        ctx.shadowBlur = 8;
+        ctx.fillRect(bullet.x - 2, bullet.y, 4, 8);
+        ctx.shadowBlur = 0;
+        
+        // Add energy trail
+        ctx.fillStyle = 'rgba(68, 255, 68, 0.3)';
+        ctx.fillRect(bullet.x - 1, bullet.y + 8, 2, 12);
+      }
     });
   }
 
   private renderPlayer() {
     const { ctx } = this;
     
-    // Draw player ship
-    ctx.fillStyle = '#4444ff';
-    ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
-    
-    // Draw player ship details
-    ctx.fillStyle = '#2222cc';
-    ctx.fillRect(this.player.x + 5, this.player.y + 5, this.player.width - 10, this.player.height - 10);
-    
-    // Draw engine glow
-    ctx.fillStyle = '#ff8844';
-    ctx.fillRect(this.player.x + 15, this.player.y + this.player.height, 10, 8);
-    ctx.fillRect(this.player.x + 35, this.player.y + this.player.height, 10, 8);
+    // Draw player ship using sprite
+    if (this.playerSprite.complete) {
+      ctx.drawImage(this.playerSprite, this.player.x, this.player.y, this.player.width, this.player.height);
+      
+      // Enhanced engine glow animation
+      const glowIntensity = Math.sin(Date.now() * 0.02) * 0.3 + 0.7;
+      ctx.fillStyle = `rgba(255, 136, 68, ${glowIntensity})`;
+      ctx.shadowColor = '#ff8844';
+      ctx.shadowBlur = 15;
+      ctx.fillRect(this.player.x + 15, this.player.y + this.player.height, 10, 12);
+      ctx.fillRect(this.player.x + 35, this.player.y + this.player.height, 10, 12);
+      ctx.shadowBlur = 0;
+    } else {
+      // Fallback rectangle with enhanced effects
+      ctx.fillStyle = '#4444ff';
+      ctx.shadowColor = '#4444ff';
+      ctx.shadowBlur = 5;
+      ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
+      ctx.shadowBlur = 0;
+      
+      // Enhanced engine glow
+      const glowIntensity = Math.sin(Date.now() * 0.02) * 0.3 + 0.7;
+      ctx.fillStyle = `rgba(255, 136, 68, ${glowIntensity})`;
+      ctx.shadowColor = '#ff8844';
+      ctx.shadowBlur = 15;
+      ctx.fillRect(this.player.x + 15, this.player.y + this.player.height, 10, 12);
+      ctx.fillRect(this.player.x + 35, this.player.y + this.player.height, 10, 12);
+      ctx.shadowBlur = 0;
+    }
   }
 
   private renderParticles() {
@@ -450,8 +573,18 @@ export class GameEngine {
     
     this.particles.forEach(particle => {
       const alpha = particle.life / particle.maxLife;
+      const size = alpha * 3 + 1;
+      
       ctx.fillStyle = particle.color.replace(')', `, ${alpha})`).replace('hsl', 'hsla');
-      ctx.fillRect(particle.x - 1, particle.y - 1, 2, 2);
+      
+      // Add glow effect for particles
+      if (alpha > 0.5) {
+        ctx.shadowColor = particle.color;
+        ctx.shadowBlur = 8;
+      }
+      
+      ctx.fillRect(particle.x - size/2, particle.y - size/2, size, size);
+      ctx.shadowBlur = 0;
     });
   }
 }
