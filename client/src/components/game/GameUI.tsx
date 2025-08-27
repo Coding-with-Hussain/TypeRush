@@ -4,7 +4,7 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 
 const GameUI = () => {
-  const { score, wpm, accuracy, currentWord, pauseGame, resumeGame, isPaused } = useTypingGame();
+  const { score, wpm, accuracy, currentWord } = useTypingGame();
   const { toggleMute, isMuted } = useAudio();
 
   return (
@@ -37,14 +37,6 @@ const GameUI = () => {
           >
             {isMuted ? '🔇' : '🔊'}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={isPaused ? resumeGame : pauseGame}
-            className="bg-black/80 border-gray-600 text-white hover:bg-gray-800"
-          >
-            {isPaused ? '▶️' : '⏸️'}
-          </Button>
         </div>
       </div>
 
@@ -62,22 +54,6 @@ const GameUI = () => {
         </div>
       )}
 
-      {/* Pause overlay */}
-      {isPaused && (
-        <div className="absolute inset-0 bg-black/70 flex items-center justify-center pointer-events-auto">
-          <Card className="bg-black/90 border-gray-600 p-8">
-            <div className="text-center text-white">
-              <h2 className="text-3xl font-bold mb-4">Game Paused</h2>
-              <Button
-                onClick={resumeGame}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                Resume Game
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
     </div>
   );
 };

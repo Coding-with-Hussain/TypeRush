@@ -242,8 +242,9 @@ export class GameEngine {
     this.bullets.forEach(bullet => {
       const enemy = this.enemies.find(e => e.id === bullet.targetId);
       if (enemy && this.isColliding(bullet, enemy)) {
-        this.destroyEnemy(enemy);
+        // Remove the bullet when it hits
         this.bullets = this.bullets.filter(b => b.id !== bullet.id);
+        // Create explosion effect
         this.createExplosion(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2);
       }
     });
@@ -372,6 +373,7 @@ export class GameEngine {
         
         // Check if word is complete
         if (this.currentTarget.typedLength >= this.currentTarget.word.length) {
+          // Destroy enemy immediately when word is complete
           this.destroyEnemy(this.currentTarget);
         }
       } else {
