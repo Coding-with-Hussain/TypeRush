@@ -1,0 +1,10 @@
+<svg width="4" height="8" viewBox="0 0 4 8" xmlns="http://www.w3.org/2000/svg">
+  <!-- Bullet core -->
+  <rect x="1" y="0" width="2" height="8" fill="#44ff44"/>
+  
+  <!-- Glow effect -->
+  <rect x="0" y="1" width="4" height="6" fill="#44ff44" opacity="0.3"/>
+  
+  <!-- Tip -->
+  <polygon points="2,0 3,2 1,2" fill="#88ffaa"/>
+</svg>

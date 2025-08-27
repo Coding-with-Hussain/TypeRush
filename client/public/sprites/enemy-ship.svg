@@ -1,0 +1,24 @@
+<svg width="80" height="40" viewBox="0 0 80 40" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main ship body -->
+  <polygon points="40,35 55,5 25,5" fill="#ff4444" stroke="#cc2222" stroke-width="2"/>
+  
+  <!-- Cockpit -->
+  <circle cx="40" cy="22" r="6" fill="#ffff44" opacity="0.8"/>
+  
+  <!-- Wings -->
+  <polygon points="70,15 75,5 65,20" fill="#dd3333"/>
+  <polygon points="10,15 5,5 15,20" fill="#dd3333"/>
+  
+  <!-- Weapon mounts -->
+  <rect x="15" y="5" width="3" height="6" fill="#666666"/>
+  <rect x="62" y="5" width="3" height="6" fill="#666666"/>
+  
+  <!-- Engine exhausts -->
+  <rect x="30" y="5" width="4" height="8" fill="#4488ff"/>
+  <rect x="46" y="5" width="4" height="8" fill="#4488ff"/>
+  
+  <!-- Details -->
+  <line x1="40" y1="10" x2="40" y2="30" stroke="#ffffff" stroke-width="1" opacity="0.5"/>
+  <circle cx="35" cy="18" r="2" fill="#44ff44"/>
+  <circle cx="45" cy="18" r="2" fill="#44ff44"/>
+</svg>
