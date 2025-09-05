@@ -35,25 +35,72 @@ function App() {
   }, [gameState, startBackgroundMusic]);
 
   return (
-    <div 
-      style={{ 
-        width: '100vw', 
-        height: '100vh', 
-        position: 'relative', 
+    <div
+      style={{
+        width: '100vw',
+        height: '100vh',
+        position: 'relative',
         overflow: 'hidden',
-        background: 'linear-gradient(180deg, #0a0a23 0%, #1a1a3e 100%)'
+        background: 'linear-gradient(180deg, #0a0a23 0%, #1a1a3e 100%)',
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'stretch',
       }}
     >
-      {gameState === 'menu' && <MainMenu />}
-      
-      {gameState === 'playing' && (
-        <>
-          <GameCanvas />
-          <GameUI />
-        </>
-      )}
-      
-      {gameState === 'gameOver' && <GameOver />}
+      {/* Left Ad Space */}
+      <div
+        style={{
+          width: '300px',
+          background: 'rgba(20,20,40,0.85)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#fff',
+          fontWeight: 'bold',
+          fontSize: '1.1rem',
+          zIndex: 2,
+        }}
+      >
+        {/* Replace with ad content */}
+        Ad Space
+      </div>
+      {/* Main Content */}
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+        }}
+      >
+        {gameState === 'menu' && <MainMenu />}
+        {gameState === 'playing' && (
+          <>
+            <GameCanvas />
+            <GameUI />
+          </>
+        )}
+        {gameState === 'gameOver' && <GameOver />}
+      </div>
+      {/* Right Ad Space */}
+      <div
+        style={{
+          width: '300px',
+          background: 'rgba(20,20,40,0.85)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#fff',
+          fontWeight: 'bold',
+          fontSize: '1.1rem',
+          zIndex: 2,
+        }}
+      >
+        {/* Replace with ad content */}
+        Ad Space
+      </div>
     </div>
   );
 }

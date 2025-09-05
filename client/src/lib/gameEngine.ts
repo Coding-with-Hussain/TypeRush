@@ -76,8 +76,8 @@ export class GameEngine {
   private correctKeystrokes = 0;
   private gameStartTime = 0;
   private lastEnemySpawn = 0;
-  private waveNumber = 1;
-  private difficulty: 'easy' | 'medium' | 'hard' = 'easy';
+  // Single mode: time-based difficulty scaling
+  private baseDifficulty: 'easy' = 'easy';
   
   // Current typing target
   private currentTarget: Enemy | null = null;
@@ -85,7 +85,7 @@ export class GameEngine {
   constructor(ctx: CanvasRenderingContext2D, callbacks: GameCallbacks, difficulty: 'easy' | 'medium' | 'hard' = 'easy') {
     this.ctx = ctx;
     this.callbacks = callbacks;
-    this.difficulty = difficulty;
+    this.baseDifficulty = 'easy';
     
     // Load sprites
     this.playerSprite = new Image();
@@ -165,16 +165,17 @@ export class GameEngine {
   }
 
   private spawnEnemies(now: number) {
-    const spawnInterval = this.getSpawnInterval();
+  const spawnInterval = this.getSpawnInterval();
     
     if (now - this.lastEnemySpawn > spawnInterval) {
+      const secondsElapsed = (now - this.gameStartTime) / 1000;
       const enemy: Enemy = {
         id: Math.random().toString(36),
         x: Math.random() * (this.ctx.canvas.width - 100) + 50,
         y: -50,
-        word: getRandomWord(this.difficulty),
-        typedLength: 0,
-        speed: this.getEnemySpeed(),
+        word: getRandomWord(secondsElapsed),
+  typedLength: 0,
+  speed: this.getEnemySpeed(),
         width: 80,
         height: 40
       };
@@ -185,13 +186,22 @@ export class GameEngine {
   }
 
   private getSpawnInterval(): number {
-    const baseInterval = { easy: 3000, medium: 2000, hard: 1500 }[this.difficulty];
-    return Math.max(baseInterval - (this.waveNumber * 100), 800);
+    // Decrease interval slowly over time to increase difficulty
+    const seconds = (Date.now() - this.gameStartTime) / 1000;
+    const baseInterval = 3000; // start with one enemy every 3s
+    // shrink interval by up to 70% over 3 minutes
+    const reduction = Math.min(seconds / 180, 0.7);
+    const interval = baseInterval * (1 - reduction);
+    return Math.max(interval, 800);
   }
 
   private getEnemySpeed(): number {
-    const baseSpeed = { easy: 1, medium: 1.5, hard: 2 }[this.difficulty];
-    return baseSpeed + (this.waveNumber * 0.1);
+    // Increase speed slowly over time
+    const seconds = (Date.now() - this.gameStartTime) / 1000;
+    const baseSpeed = 1; // normal word speed
+    // increase up to +2.5 over 3 minutes
+    const increase = Math.min((seconds / 180) * 2.5, 2.5);
+    return baseSpeed + increase;
   }
 
   private updateEnemies() {
@@ -266,7 +276,7 @@ export class GameEngine {
 
   private destroyEnemy(enemy: Enemy) {
     this.enemies = this.enemies.filter(e => e.id !== enemy.id);
-    this.score += enemy.word.length * 10 * this.waveNumber;
+  this.score += enemy.word.length * 10;
     
     if (this.currentTarget?.id === enemy.id) {
       this.currentTarget = null;
@@ -463,25 +473,37 @@ export class GameEngine {
     const { ctx } = this;
     
     this.enemies.forEach(enemy => {
+      // Draw a subtle light backdrop behind the ship to increase contrast
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.fillRect(enemy.x - 4, enemy.y - 4, enemy.width + 8, enemy.height + 8);
+      ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(enemy.x - 4, enemy.y - 4, enemy.width + 8, enemy.height + 8);
+      ctx.restore();
+
       // Draw enemy ship using sprite
       if (this.enemySprite.complete) {
         ctx.drawImage(this.enemySprite, enemy.x, enemy.y, enemy.width, enemy.height);
       } else {
-        // Fallback rectangle
-        ctx.fillStyle = '#ff4444';
+        // Fallback rectangle (high contrast)
+        ctx.fillStyle = '#ff6666';
         ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(enemy.x, enemy.y, enemy.width, enemy.height);
       }
       
       // Draw word with better visibility and bounds checking
-      ctx.font = 'bold 16px monospace';
+      ctx.font = 'bold 18px monospace';
       ctx.textAlign = 'center';
       
-      const wordY = enemy.y + enemy.height + 30;
+      const wordY = enemy.y + enemy.height + 22;
       let centerX = enemy.x + enemy.width / 2;
       
       // Ensure word stays within canvas bounds
       const textWidth = ctx.measureText(enemy.word).width;
-      const padding = 10;
+      const padding = 12;
       
       if (centerX - textWidth/2 < padding) {
         centerX = textWidth/2 + padding;
@@ -489,40 +511,56 @@ export class GameEngine {
         centerX = ctx.canvas.width - textWidth/2 - padding;
       }
       
-      // Draw background for better readability
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
-      ctx.fillRect(centerX - textWidth/2 - 5, wordY - 20, textWidth + 10, 25);
+      // Draw background for better readability (larger and slightly translucent)
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+      const boxX = centerX - textWidth/2 - 8;
+      const boxY = wordY - 22;
+      const boxW = textWidth + 16;
+      const boxH = 28;
+      ctx.fillRect(boxX, boxY, boxW, boxH);
+      ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(boxX, boxY, boxW, boxH);
       
-      // Draw typed portion in bright green with glow
+      // Draw typed portion in bright green with glow and dark stroke for contrast
       if (enemy.typedLength > 0) {
         const typedPortion = enemy.word.substring(0, enemy.typedLength);
-        ctx.fillStyle = '#00ff00';
-        ctx.shadowColor = '#00ff00';
-        ctx.shadowBlur = 5;
-        
-        // Calculate position for typed text
         const fullTextMetrics = ctx.measureText(enemy.word);
         const typedMetrics = ctx.measureText(typedPortion);
         const startX = centerX - fullTextMetrics.width / 2;
-        
+
+        ctx.save();
+        // Dark stroke for contrast
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = 'rgba(0,0,0,0.95)';
+        ctx.strokeText(typedPortion, startX + typedMetrics.width / 2, wordY);
+
+        // Glow fill
+        ctx.fillStyle = '#00ff00';
+        ctx.shadowColor = '#00ff00';
+        ctx.shadowBlur = 6;
         ctx.fillText(typedPortion, startX + typedMetrics.width / 2, wordY);
-        ctx.shadowBlur = 0;
+        ctx.restore();
       }
-      
-      // Draw remaining portion in bright white
+
+      // Draw remaining portion in bright white with dark stroke
       const remainingPortion = enemy.word.substring(enemy.typedLength);
       if (remainingPortion.length > 0) {
-        ctx.fillStyle = '#ffffff';
-        ctx.shadowColor = '#ffffff';
-        ctx.shadowBlur = 2;
-        
         const fullTextMetrics = ctx.measureText(enemy.word);
         const typedMetrics = ctx.measureText(enemy.word.substring(0, enemy.typedLength));
         const remainingMetrics = ctx.measureText(remainingPortion);
         const startX = centerX - fullTextMetrics.width / 2;
-        
+
+        ctx.save();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'rgba(0,0,0,0.9)';
+        ctx.strokeText(remainingPortion, startX + typedMetrics.width + remainingMetrics.width / 2, wordY);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = 'rgba(255,255,255,0.8)';
+        ctx.shadowBlur = 2;
         ctx.fillText(remainingPortion, startX + typedMetrics.width + remainingMetrics.width / 2, wordY);
-        ctx.shadowBlur = 0;
+        ctx.restore();
       }
       
       // Highlight current target with pulsing effect

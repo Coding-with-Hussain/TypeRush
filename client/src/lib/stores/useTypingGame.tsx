@@ -15,7 +15,7 @@ interface TypingGameState {
   isPaused: boolean;
   
   // Actions
-  startGame: (difficulty: Difficulty) => void;
+  startGame: () => void;
   pauseGame: () => void;
   resumeGame: () => void;
   endGame: () => void;
@@ -37,10 +37,10 @@ export const useTypingGame = create<TypingGameState>()(
     currentWord: '',
     isPaused: false,
 
-    startGame: (difficulty) => {
+    startGame: () => {
       set({
         gameState: 'playing',
-        difficulty,
+        difficulty: 'easy',
         score: 0,
         wpm: 0,
         accuracy: 100,
