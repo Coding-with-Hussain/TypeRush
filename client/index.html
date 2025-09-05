@@ -2,10 +2,37 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+  <!-- Allow users to zoom for accessibility (do not disable user scaling) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TypeRush — Fast multiplayer typing game</title>
+    <meta name="description" content="TypeRush — a fast and fun multiplayer typing game built with React and Vite. Race against others to type words accurately and improve your speed." />
+    <meta name="robots" content="index,follow" />
+    <!-- Replace the example canonical below with your production absolute URL
+      (e.g. https://your-domain.com/) before deploying. Relative URLs are
+      invalid for rel=canonical and can confuse search engines. -->
+    <link rel="canonical" href="https://example.com/" />
+    <meta property="og:title" content="TypeRush — Fast multiplayer typing game" />
+    <meta property="og:description" content="Race to type words accurately and improve your typing speed. Play TypeRush built with React and Vite." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#0ea5a4" />
+
+    <!-- Structured data for better crawler understanding -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "TypeRush",
+        "url": "/",
+        "description": "A fast multiplayer typing game to practice and compete in typing speed and accuracy."
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <strong>JavaScript is required to run this app. Please enable JavaScript in your browser.</strong>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

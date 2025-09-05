@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Crawl-delay can be tuned if your server cannot handle burst crawls
+# Crawl-delay: 10
+
+# IMPORTANT: The Sitemap directive must use an absolute URL (including scheme and
+# hostname). Replace the placeholder below with your production URL before
+# deploying (for example: Sitemap: https://your-domain.com/sitemap.xml).
+# Relative paths like "/sitemap.xml" are not valid here and will trigger
+# "Invalid sitemap URL" errors in crawler validators.
+Sitemap: https://example.com/sitemap.xml
