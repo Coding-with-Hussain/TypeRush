@@ -68,7 +68,7 @@ export class GameEngine {
   private bulletSprite: HTMLImageElement;
   
   // Player
-  private player = { x: 0, y: 0, width: 60, height: 40 };
+  private player = { x: 0, y: 0, width: 90, height: 60 };
   
   // Game state
   private score = 0;
@@ -176,8 +176,8 @@ export class GameEngine {
         word: getRandomWord(secondsElapsed),
   typedLength: 0,
   speed: this.getEnemySpeed(),
-        width: 80,
-        height: 40
+  width: 120,
+  height: 70
       };
       
       this.enemies.push(enemy);
@@ -494,8 +494,8 @@ export class GameEngine {
         ctx.strokeRect(enemy.x, enemy.y, enemy.width, enemy.height);
       }
       
-      // Draw word with better visibility and bounds checking
-      ctx.font = 'bold 18px monospace';
+  // Draw word with better visibility and bounds checking
+  ctx.font = 'bold 22px monospace';
       ctx.textAlign = 'center';
       
       const wordY = enemy.y + enemy.height + 22;
@@ -629,14 +629,20 @@ export class GameEngine {
     if (this.playerSprite.complete) {
       ctx.drawImage(this.playerSprite, this.player.x, this.player.y, this.player.width, this.player.height);
       
-      // Enhanced engine glow animation
-      const glowIntensity = Math.sin(Date.now() * 0.02) * 0.3 + 0.7;
-      ctx.fillStyle = `rgba(255, 136, 68, ${glowIntensity})`;
-      ctx.shadowColor = '#ff8844';
-      ctx.shadowBlur = 15;
-      ctx.fillRect(this.player.x + 15, this.player.y + this.player.height, 10, 12);
-      ctx.fillRect(this.player.x + 35, this.player.y + this.player.height, 10, 12);
-      ctx.shadowBlur = 0;
+  // Enhanced engine glow animation (centered under ship)
+  const glowIntensity = Math.sin(Date.now() * 0.02) * 0.3 + 0.7;
+  const lightW = 12;
+  const lightH = 14;
+  const leftX = this.player.x + this.player.width * 0.28 - lightW / 2;
+  const rightX = this.player.x + this.player.width * 0.72 - lightW / 2;
+  const lightY = this.player.y + this.player.height - 2;
+  // blue glow to match ship
+  ctx.fillStyle = `rgba(68, 136, 255, ${glowIntensity})`;
+  ctx.shadowColor = '#44a0ff';
+  ctx.shadowBlur = 18;
+  ctx.fillRect(leftX, lightY, lightW, lightH);
+  ctx.fillRect(rightX, lightY, lightW, lightH);
+  ctx.shadowBlur = 0;
     } else {
       // Fallback rectangle with enhanced effects
       ctx.fillStyle = '#4444ff';
@@ -645,14 +651,19 @@ export class GameEngine {
       ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
       ctx.shadowBlur = 0;
       
-      // Enhanced engine glow
-      const glowIntensity = Math.sin(Date.now() * 0.02) * 0.3 + 0.7;
-      ctx.fillStyle = `rgba(255, 136, 68, ${glowIntensity})`;
-      ctx.shadowColor = '#ff8844';
-      ctx.shadowBlur = 15;
-      ctx.fillRect(this.player.x + 15, this.player.y + this.player.height, 10, 12);
-      ctx.fillRect(this.player.x + 35, this.player.y + this.player.height, 10, 12);
-      ctx.shadowBlur = 0;
+  // Enhanced engine glow (centered under ship)
+  const glowIntensity = Math.sin(Date.now() * 0.02) * 0.3 + 0.7;
+  const lightW_f = 12;
+  const lightH_f = 14;
+  const leftX_f = this.player.x + this.player.width * 0.28 - lightW_f / 2;
+  const rightX_f = this.player.x + this.player.width * 0.72 - lightW_f / 2;
+  const lightY_f = this.player.y + this.player.height - 2;
+  ctx.fillStyle = `rgba(68, 136, 255, ${glowIntensity})`;
+  ctx.shadowColor = '#44a0ff';
+  ctx.shadowBlur = 18;
+  ctx.fillRect(leftX_f, lightY_f, lightW_f, lightH_f);
+  ctx.fillRect(rightX_f, lightY_f, lightW_f, lightH_f);
+  ctx.shadowBlur = 0;
     }
   }
 

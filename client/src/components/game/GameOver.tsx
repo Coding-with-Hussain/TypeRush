@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { useState, useEffect } from 'react';
 
 const GameOver = () => {
-  const { score, wpm, accuracy, highScore, resetGame } = useTypingGame();
+  const { score, wpm, accuracy, highScore, resetGame, startGame } = useTypingGame();
   const [showStats, setShowStats] = useState(false);
 
   useEffect(() => {
@@ -17,7 +17,7 @@ const GameOver = () => {
     if (wpm >= 61) return { rank: 'Space Commander', color: 'text-yellow-400', medals: '🥇🥇', emoji: '⭐' };
     if (wpm >= 46) return { rank: 'Elite Pilot', color: 'text-blue-400', medals: '🥇', emoji: '🛸' };
     if (wpm >= 26) return { rank: 'Cadet', color: 'text-green-400', medals: '🥉', emoji: '🚀' };
-    return { rank: 'Recruit', color: 'text-gray-400', medals: '', emoji: '👶' };
+  return { rank: '', color: 'text-gray-400', medals: '', emoji: '' };
   };
 
   const rankInfo = getRank(wpm);
@@ -86,17 +86,19 @@ const GameOver = () => {
           </div>
 
           {/* Rank Display */}
-          <div className="text-center p-4 bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-xl border-2 border-purple-500/30 shadow-lg hover:shadow-purple-500/20 transition-all">
-            <div className="text-3xl mb-2">{rankInfo.emoji}</div>
-            <div className="text-2xl mb-2">{rankInfo.medals}</div>
-            <div className={`text-lg font-bold ${rankInfo.color} mb-1`}>
-              {rankInfo.rank}
-            </div>
-            <div className="text-gray-400 text-xs">
+          <div className="text-center py-2 px-4 bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-xl border-2 border-purple-500/30 shadow-lg hover:shadow-purple-500/20 transition-all flex flex-col items-center justify-center">
+            {rankInfo.emoji && <div className="text-3xl mb-2">{rankInfo.emoji}</div>}
+            {rankInfo.medals && <div className="text-2xl mb-2">{rankInfo.medals}</div>}
+            {rankInfo.rank && (
+              <div className={`text-lg font-bold ${rankInfo.color} mb-1`}>
+                {rankInfo.rank}
+              </div>
+            )}
+            <div className="text-gray-400 text-xs text-center">
               {wpm >= 80 ? 'Earth\'s Greatest Defender!' : 
                wpm >= 61 ? 'Outstanding Performance!' :
                wpm >= 46 ? 'Solid Defense!' :
-               wpm >= 26 ? 'Good Effort!' : 'Keep Training!'}
+               wpm >= 26 ? 'Good Effort!' : ''}
             </div>
           </div>
 
@@ -114,8 +116,8 @@ const GameOver = () => {
           <div className="flex space-x-4">
             <Button
               onClick={() => {
-                console.log('Restart button clicked');
-                resetGame();
+                // Immediately start a new game
+                startGame();
               }}
               className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold py-2 shadow-lg hover:shadow-green-500/25 transition-all duration-300 transform hover:scale-105"
             >

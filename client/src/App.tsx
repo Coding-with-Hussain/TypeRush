@@ -35,46 +35,14 @@ function App() {
   }, [gameState, startBackgroundMusic]);
 
   return (
-    <div
-      style={{
-        width: '100vw',
-        height: '100vh',
-        position: 'relative',
-        overflow: 'hidden',
-        background: 'linear-gradient(180deg, #0a0a23 0%, #1a1a3e 100%)',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'stretch',
-      }}
-    >
-      {/* Left Ad Space */}
-      <div
-        style={{
-          width: '300px',
-          background: 'rgba(20,20,40,0.85)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#fff',
-          fontWeight: 'bold',
-          fontSize: '1.1rem',
-          zIndex: 2,
-        }}
-      >
-        {/* Replace with ad content */}
-        Ad Space
-      </div>
+    <div className="w-screen h-screen relative overflow-hidden bg-gradient-to-b from-[#0a0a23] to-[#1a1a3e] flex">
+      {/* Left Ad Space - hidden on small screens */}
+      <aside className="hidden md:flex items-center justify-center bg-[rgba(20,20,40,0.85)] text-white font-bold z-20 md:w-48 lg:w-72 p-2">
+        <div className="text-center">Ad Space</div>
+      </aside>
+
       {/* Main Content */}
-      <div
-        style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'relative',
-        }}
-      >
+      <main className="flex-1 relative flex items-center justify-center min-h-0">
         {gameState === 'menu' && <MainMenu />}
         {gameState === 'playing' && (
           <>
@@ -83,24 +51,12 @@ function App() {
           </>
         )}
         {gameState === 'gameOver' && <GameOver />}
-      </div>
-      {/* Right Ad Space */}
-      <div
-        style={{
-          width: '300px',
-          background: 'rgba(20,20,40,0.85)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#fff',
-          fontWeight: 'bold',
-          fontSize: '1.1rem',
-          zIndex: 2,
-        }}
-      >
-        {/* Replace with ad content */}
-        Ad Space
-      </div>
+      </main>
+
+      {/* Right Ad Space - hidden on small screens */}
+      <aside className="hidden md:flex items-center justify-center bg-[rgba(20,20,40,0.85)] text-white font-bold z-20 md:w-48 lg:w-72 p-2">
+        <div className="text-center">Ad Space</div>
+      </aside>
     </div>
   );
 }
