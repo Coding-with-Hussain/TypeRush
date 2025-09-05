@@ -54,11 +54,11 @@ const MainMenu = () => {
 
           {highScore > 0 && (
             <div className="text-center p-4 bg-gradient-to-r from-yellow-900/40 to-orange-900/40 rounded-lg border border-yellow-500/30 shadow-lg">
-              <div className="text-sm text-gray-300 mb-1">🏆 Personal Best</div>
+              <div className="text-sm text-gray-300 mb-1">🏆 World Record</div>
               <div className="text-2xl font-bold text-yellow-400 animate-pulse">
                 {highScore.toLocaleString()}
               </div>
-              <div className="text-xs text-yellow-300/70 mt-1">Can you beat your record?</div>
+              <div className="text-xs text-yellow-300/70 mt-1">Can you beat the world record?</div>
             </div>
           )}
 
